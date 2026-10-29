@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,128 +5,212 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lab Assistant Quiz</title>
 <style>
-body {
-font-family: Arial, sans-serif;
-background: #f0f5ff;
-margin: 0;
-padding: 20px;
-color: #20304a;
-}
-.container {
-max-width: 650px;
-margin: 20px auto;
-background: white;
-padding: 24px;
-border-radius: 16px;
-box-shadow: 0 4px 15px #ccd5e5;
-}
-h1 { color: #174ea6; }
-.question {
-margin: 22px 0;
-padding: 16px;
-background: #f7f9fc;
-border-radius: 10px;
-}
-label {
-display: block;
-padding: 8px;
-cursor: pointer;
-}
-button {
-background: #174ea6;
-color: white;
-border: 0;
-border-radius: 8px;
-padding: 12px 18px;
-font-size: 16px;
-cursor: pointer;
-}
-#result {
-font-weight: bold;
-margin-top: 20px;
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#1e293b}
+header{background:#123d63;color:white;text-align:center;padding:28px 15px}
+header h1{margin:0 0 8px}
+header p{margin:0;color:#dbeafe}
+main{max-width:760px;margin:25px auto;padding:0 15px}
+.panel{background:white;border-radius:16px;padding:22px;box-shadow:0 4px 18px #0000000d}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+select,button{font-size:15px;padding:12px;border-radius:9px}
+select{border:1px solid #cbd5e1;background:white}
+button{border:0;background:#1768ac;color:white;cursor:pointer;font-weight:bold}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#e2e8f0;color:#123d63}
+.stats{display:flex;gap:10px;margin:18px 0}
+.stat{background:#eaf2fb;border-radius:10px;padding:12px;flex:1;text-align:center}
+.stat strong{display:block;font-size:22px;color:#123d63}
+.muted{color:#64748b;font-size:14px}
+#progress{height:8px;background:#e2e8f0;border-radius:8px;overflow:hidden;margin:18px 0}
+#bar{height:100%;width:0;background:#16865b;transition:width .2s}
+#question{font-size:20px;line-height:1.5}
+#choices{display:grid;gap:10px}
+.choice{width:100%;text-align:left;background:white;color:#1e293b;border:1px solid #cbd5e1;font-weight:normal}
+.choice:hover:not(:disabled){background:#eff6ff}
+.choice.correct{background:#dcfce7;border-color:#16a34a}
+.choice.wrong{background:#fee2e2;border-color:#dc2626}
+#feedback{padding:14px;border-radius:10px;margin-top:14px;line-height:1.5}
+.hidden{display:none}
+footer{text-align:center;color:#64748b;padding:25px;font-size:13px}
+@media(max-width:480px){.panel{padding:16px}.stats{gap:5px}.stat{padding:8px}#question{font-size:18px}}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>🔬 Lab Assistant Quiz</h1>
-<p>Free medical laboratory practice questions</p>
-<p>Choose one answer for each question, then check your score!</p>
+<header>
+<h1>Lab Assistant Quiz</h1>
+<p>Practice. Learn. Build confidence.</p>
+</header>
 
-<form id="quiz">
-<div class="question">
-<p><strong>1. Which blood cells carry oxygen?</strong></p>
-<label><input type="radio" name="q1" value="a"> White blood cells</label>
-<label><input type="radio" name="q1" value="b"> Red blood cells</label>
-<label><input type="radio" name="q1" value="c"> Platelets</label>
+<main>
+<section class="panel">
+<div class="row">
+<label for="category"><strong>Study category</strong></label>
+<select id="category">
+<option value="All">All categories</option>
+<option value="Hematology">Hematology</option>
+<option value="Clinical Chemistry">Clinical Chemistry</option>
+<option value="Microbiology">Microbiology</option>
+<option value="Lab Safety">Lab Safety</option>
+</select>
 </div>
 
-<div class="question">
-<p><strong>2. Which anticoagulant is commonly used for a CBC test?</strong></p>
-<label><input type="radio" name="q2" value="a"> EDTA</label>
-<label><input type="radio" name="q2" value="b"> Sodium fluoride</label>
-<label><input type="radio" name="q2" value="c"> Heparin only</label>
+<div class="stats">
+<div class="stat"><strong id="number">1/20</strong><span class="muted">Question</span></div>
+<div class="stat"><strong id="score">0</strong><span class="muted">Correct</span></div>
+<div class="stat"><strong id="percent">0%</strong><span class="muted">Accuracy</span></div>
 </div>
 
-<div class="question">
-<p><strong>3. What is the liquid portion of anticoagulated blood called?</strong></p>
-<label><input type="radio" name="q3" value="a"> Serum</label>
-<label><input type="radio" name="q3" value="b"> Plasma</label>
-<label><input type="radio" name="q3" value="c"> Hemoglobin</label>
+<div id="progress"><div id="bar"></div></div>
+<p class="muted" id="topic"></p>
+<h2 id="question"></h2>
+<div id="choices"></div>
+<div id="feedback" class="hidden" aria-live="polite"></div>
+
+<div class="row" style="margin-top:18px">
+<button id="restart" class="secondary">Restart quiz</button>
+<button id="next" disabled>Next question →</button>
 </div>
 
-<div class="question">
-<p><strong>4. Which instrument is used to examine cells on a blood smear?</strong></p>
-<label><input type="radio" name="q4" value="a"> Microscope</label>
-<label><input type="radio" name="q4" value="b"> Centrifuge</label>
-<label><input type="radio" name="q4" value="c"> Incubator</label>
+<div id="results" class="hidden" style="margin-top:20px">
+<h2>Quiz complete!</h2>
+<p id="summary"></p>
+<button id="again">Practice again</button>
 </div>
+</section>
+</main>
 
-<div class="question">
-<p><strong>5. What is the main purpose of handwashing in the laboratory?</strong></p>
-<label><input type="radio" name="q5" value="a"> Improve handwriting</label>
-<label><input type="radio" name="q5" value="b"> Prevent contamination and infection</label>
-<label><input type="radio" name="q5" value="c"> Clean laboratory equipment only</label>
-</div>
-
-<button type="button" onclick="checkAnswers()">Check My Score</button>
-<button type="reset" onclick="document.getElementById('result').textContent=''">Try Again</button>
-</form>
-
-<div id="result" aria-live="polite"></div>
-</div>
+<footer>Independent CMLA-style practice resource. Not affiliated with or endorsed by AMT.</footer>
 
 <script>
-function checkAnswers() {
-const answers = {
-q1: "b",
-q2: "a",
-q3: "b",
-q4: "a",
-q5: "b"
-};
+const questions = [
+{c:"Hematology",q:"Which blood cells primarily carry oxygen?",a:["Platelets","Red blood cells","White blood cells","Plasma cells"],k:1,e:"Red blood cells contain hemoglobin, which transports oxygen."},
+{c:"Hematology",q:"Which anticoagulant is commonly used for a CBC?",a:["EDTA","Sodium fluoride","Plain tube only","Thrombin"],k:0,e:"EDTA prevents clotting and helps preserve blood cell morphology for a CBC."},
+{c:"Hematology",q:"Which cells help the body fight infection?",a:["Red blood cells","Platelets","White blood cells","Reticulocytes"],k:2,e:"White blood cells are important components of the immune system."},
+{c:"Hematology",q:"What is the main function of platelets?",a:["Carry oxygen","Help blood clot","Produce insulin","Digest proteins"],k:1,e:"Platelets help form plugs at sites of blood vessel injury."},
+{c:"Hematology",q:"Which instrument is used to examine a peripheral blood smear?",a:["Microscope","Centrifuge only","Incubator only","Autoclave"],k:0,e:"A microscope allows examination of blood cell size, shape, and appearance."},
+{c:"Clinical Chemistry",q:"Which organ produces insulin?",a:["Kidney","Liver","Pancreas","Spleen"],k:2,e:"The pancreas produces insulin, which helps regulate blood glucose."},
+{c:"Clinical Chemistry",q:"Which test is commonly used to monitor long-term blood glucose?",a:["CBC","HbA1c","PT","ESR"],k:1,e:"HbA1c estimates average blood glucose over approximately two to three months."},
+{c:"Clinical Chemistry",q:"Which organ is primarily responsible for filtering blood to form urine?",a:["Lung","Kidney","Stomach","Thyroid"],k:1,e:"The kidneys filter blood and help regulate fluid and electrolyte balance."},
+{c:"Clinical Chemistry",q:"What does a spectrophotometer measure?",a:["Light absorbance","Blood pressure","Body temperature","Cell movement only"],k:0,e:"A spectrophotometer measures how much light a sample absorbs at a selected wavelength."},
+{c:"Clinical Chemistry",q:"Which electrolyte is especially important for normal heart rhythm?",a:["Potassium","Bilirubin","Albumin","Urea"],k:0,e:"Potassium is essential for normal nerve, muscle, and cardiac electrical activity."},
+{c:"Microbiology",q:"What is the purpose of a Gram stain?",a:["Measure glucose","Differentiate bacteria by staining characteristics","Count platelets","Measure hemoglobin"],k:1,e:"Gram staining helps distinguish bacteria based on cell wall characteristics."},
+{c:"Microbiology",q:"Which instrument is commonly used to sterilize laboratory media with steam under pressure?",a:["Autoclave","Refrigerator","Spectrophotometer","Water bath"],k:0,e:"An autoclave uses pressurized steam for sterilization."},
+{c:"Microbiology",q:"What is the purpose of an agar plate?",a:["Measure blood pressure","Grow microorganisms","Count red blood cells automatically","Measure sodium"],k:1,e:"Agar plates provide a solid medium for growing and isolating microorganisms."},
+{c:"Microbiology",q:"What should you do first if a specimen container leaks?",a:["Ignore it","Handle it with bare hands","Follow the laboratory spill and safety procedure","Pour it into another container immediately"],k:2,e:"Follow your laboratory's spill-response procedure and use appropriate PPE."},
+{c:"Microbiology",q:"Which organism is a fungus?",a:["Candida","Escherichia coli","Staphylococcus aureus","Plasmodium"],k:0,e:"Candida is a genus of yeast-like fungi."},
+{c:"Lab Safety",q:"Which PPE protects the eyes from splashes?",a:["Sandals","Safety goggles","Paper towel","Cotton shirt"],k:1,e:"Appropriate safety goggles protect the eyes from splashes."},
+{c:"Lab Safety",q:"Where should used needles be discarded?",a:["Regular trash","Sharps container","Sink","Paper recycling"],k:1,e:"Discard needles immediately in an approved sharps container."},
+{c:"Lab Safety",q:"What should you do after a blood spill?",a:["Wipe it with bare hands","Follow the approved spill procedure","Leave it for the next shift","Use only dry paper"],k:1,e:"Use the laboratory's approved blood-spill procedure and appropriate PPE."},
+{c:"Lab Safety",q:"What is the safest way to identify a patient specimen?",a:["Use the room number only","Guess from the specimen color","Follow identification policy using required identifiers","Ask another patient"],k:2,e:"Use the required patient identifiers and follow specimen-labeling policy."},
+{c:"Lab Safety",q:"What should you do before using an unfamiliar laboratory instrument?",a:["Guess how it works","Read the instructions and obtain proper training","Skip the safety check","Ask a patient to operate it"],k:1,e:"Read the instructions and receive appropriate training before operating equipment."}
+];
+
+let quiz = [];
+let index = 0;
 let score = 0;
-let unanswered = 0;
+let answered = 0;
+let locked = false;
 
-for (const question in answers) {
-const selected = document.querySelector(
-'input[name="' + question + '"]:checked'
-);
-if (!selected) {
-unanswered++;
-} else if (selected.value === answers[question]) {
-score++;
-}
+const $ = id => document.getElementById(id);
+
+function startQuiz() {
+const category = $("category").value;
+quiz = questions.filter(q => category === "All" || q.c === category);
+index = 0;
+score = 0;
+answered = 0;
+locked = false;
+$("results").classList.add("hidden");
+$("next").classList.remove("hidden");
+$("choices").classList.remove("hidden");
+$("question").classList.remove("hidden");
+$("topic").classList.remove("hidden");
+$("feedback").classList.add("hidden");
+showQuestion();
+updateStats();
 }
 
-const result = document.getElementById("result");
-if (unanswered > 0) {
-result.textContent = "Please answer all 5 questions before checking your score.";
+function showQuestion() {
+locked = false;
+const q = quiz[index];
+$("number").textContent = `${index + 1}/${quiz.length}`;
+$("topic").textContent = q.c;
+$("question").textContent = q.q;
+$("choices").innerHTML = "";
+$("feedback").classList.add("hidden");
+$("next").disabled = true;
+$("next").textContent = index === quiz.length - 1 ? "See results →" : "Next question →";
+
+q.a.forEach((answer, i) => {
+const button = document.createElement("button");
+button.className = "choice";
+button.textContent = `${String.fromCharCode(65 + i)}. ${answer}`;
+button.addEventListener("click", () => chooseAnswer(i));
+$("choices").appendChild(button);
+});
+
+updateStats();
+}
+
+function chooseAnswer(choice) {
+if (locked) return;
+locked = true;
+answered++;
+
+const q = quiz[index];
+const buttons = $("choices").querySelectorAll("button");
+
+buttons.forEach((button, i) => {
+button.disabled = true;
+if (i === q.k) button.classList.add("correct");
+if (i === choice && choice !== q.k) button.classList.add("wrong");
+});
+
+const correct = choice === q.k;
+if (correct) score++;
+
+$("feedback").classList.remove("hidden");
+$("feedback").style.background = correct ? "#dcfce7" : "#fee2e2";
+$("feedback").innerHTML = `<strong>${correct ? "Correct!" : "Not quite."}</strong><br>${q.e}`;
+$("next").disabled = false;
+updateStats();
+}
+
+function updateStats() {
+$("score").textContent = score;
+$("percent").textContent = answered ? Math.round(score / answered * 100) + "%" : "0%";
+$("bar").style.width = (index / Math.max(quiz.length, 1) * 100) + "%";
+}
+
+function nextQuestion() {
+if (!locked) return;
+if (index < quiz.length - 1) {
+index++;
+showQuestion();
 } else {
-result.textContent = "Your score: " + score + " out of 5 (" +
-Math.round(score / 5 * 100) + "%).";
+finishQuiz();
 }
 }
+
+function finishQuiz() {
+$("bar").style.width = "100%";
+$("number").textContent = `${quiz.length}/${quiz.length}`;
+$("question").classList.add("hidden");
+$("topic").classList.add("hidden");
+$("choices").classList.add("hidden");
+$("feedback").classList.add("hidden");
+$("next").classList.add("hidden");
+$("results").classList.remove("hidden");
+$("summary").textContent = `You answered ${score} out of ${quiz.length} questions correctly (${Math.round(score / quiz.length * 100)}%). Keep practicing to improve your knowledge.`;
+}
+
+$("next").addEventListener("click", nextQuestion);
+$("restart").addEventListener("click", startQuiz);
+$("again").addEventListener("click", startQuiz);
+$("category").addEventListener("change", startQuiz);
+
+startQuiz();
 </script>
 </body>
 </html>
